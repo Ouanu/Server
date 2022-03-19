@@ -20,23 +20,21 @@ public class Client {
     public void execute() throws IOException {
         DataInputStream inputStream = new DataInputStream(socket.getInputStream());
         DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-        DirAndFileUtil util = new DirAndFileUtil();
+        DirAndFileUtil util = new DirAndFileUtil(2);
 
         if (socket.isConnected()) {
             outputStream.writeUTF("Hello there!!");
             String s = inputStream.readUTF();
             System.out.println(s);
-            outputStream.writeInt(12345);
+            outputStream.writeInt(23456);
             s = inputStream.readUTF();
             System.out.println(s);
 
         }
 
-//        File file = new File("C:\\Users\\Linkdamo\\Desktop\\证明2.jpg");
-//        sendFiles(outputStream, file);
-//        synchronizeFiles(inputStream, outputStream);
+        util.synchronizeFiles(inputStream, outputStream);
 
-        util.downloadFiles(outputStream, inputStream);
+//        util.downloadFiles(outputStream, inputStream);
         outputStream.writeUTF("BYE");
         outputStream.close();
         inputStream.close();

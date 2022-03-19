@@ -1,11 +1,26 @@
 package utils;
 
+import javax.naming.Name;
 import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Objects;
 
 public class DirAndFileUtil {
+
+    private static final int serverNum = 1;
+    private static final int clientNum = 2;
+    private static final String SERVER = "server";
+    private static final String CLIENT = "client";
+    private String NAME = null;
+
+
+    public DirAndFileUtil(int choice) {
+        if(choice == serverNum) NAME = SERVER;
+        else if(choice == serverNum) NAME = CLIENT;
+        else NAME = null;
+    }
+
     /**
      * 同步文件至客户端
      *
@@ -17,7 +32,7 @@ public class DirAndFileUtil {
         HashMap<String, Integer> map = new HashMap<>();
         HashMap<String, LinkedList<File>> dirAndFiles = new HashMap<>();
         String[] dirNames = new String[0];
-        File dir = new File("C:\\Users\\Linkdamo\\Desktop\\client\\");
+        File dir = new File("C:\\Users\\Linkdamo\\Desktop\\" + NAME + "\\");
         if (!dir.exists()) {
             dir.mkdirs();
         } else {
@@ -110,7 +125,7 @@ public class DirAndFileUtil {
         try {
             //创建文件夹
             String dirName = inputStream.readUTF();
-            File dir = new File("C:\\Users\\Linkdamo\\Desktop\\receiver\\", dirName);
+            File dir = new File("C:\\Users\\Linkdamo\\Desktop\\" + NAME + "\\", dirName);
             if (!dir.exists()) {
                 //noinspection ResultOfMethodCallIgnored
                 dir.mkdirs();
@@ -130,7 +145,7 @@ public class DirAndFileUtil {
                 int len = inputStream.readInt(); // 文件长度
                 System.out.println("real size = " + len);
                 String fileName = inputStream.readUTF(); // 文件名称
-                File file = new File("C:\\Users\\Linkdamo\\Desktop\\receiver\\" + dirName + "\\", fileName); //保存路径
+                File file = new File("C:\\Users\\Linkdamo\\Desktop\\" + NAME + "\\" + dirName + "\\", fileName); //保存路径
                 if (!file.exists()) {
                     file.createNewFile(); // 为接收文件创建文件
                 }

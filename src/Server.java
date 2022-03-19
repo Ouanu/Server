@@ -22,7 +22,7 @@ public class Server extends Thread {
     }
 
     private static class Task implements Runnable {
-        private DirAndFileUtil util = new DirAndFileUtil();
+        private DirAndFileUtil util = new DirAndFileUtil(1);
         private Socket socket;
 
         public Task(Socket socket) {

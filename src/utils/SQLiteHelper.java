@@ -11,6 +11,7 @@ public class SQLiteHelper {
     private static volatile SQLiteHelper INSTANCE = null;
     private static String databaseUrl = null;
     private HashMap<Long, ResData> idList = new HashMap<>();
+    private boolean isOpen = false;
 
     public static SQLiteHelper getInstance() {
         if (INSTANCE == null) {
@@ -24,6 +25,7 @@ public class SQLiteHelper {
     }
 
     public SQLiteHelper(String url) {
+        System.out.println(url);
         databaseUrl = url;
         try {
             Class.forName("org.sqlite.JDBC");
@@ -31,8 +33,10 @@ public class SQLiteHelper {
             statement = conn.createStatement();
             rs = statement.executeQuery("SELECT * FROM resdata");
             initResData();
+            isOpen = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Fail to open database __" + e);
+            isOpen = false;
         }
     }
 
@@ -47,11 +51,27 @@ public class SQLiteHelper {
                     rs.getString("dirPath")
             ));
         }
+        System.out.println(idList.get(15L).getDesc());
     }
 
+    public boolean getDatabaseStatement() {
+        return isOpen;
+    }
 
     public String getDesc(Long id) {
         return idList.get(id).getDesc();
     }
+
+    public long getUpdateDate(Long id) {
+        return idList.get(id).getUpdateDate();
+    }
+
+    public boolean isExist(Long uid) {
+        if (idList.getOrDefault(uid, null) == null) {
+            return false;
+        }
+        return true;
+    }
+
 
 }

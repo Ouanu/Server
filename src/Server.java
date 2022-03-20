@@ -10,7 +10,7 @@ public class Server extends Thread {
     private ServerSocket serverSocket;
     private int port = 9250;
     private static Object lock = new Object();
-    private static SQLiteHelper sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\client\\RES_DATABASE.db");
+    private static SQLiteHelper sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\RES_DATABASE.db");
 
 
     public Server() throws IOException {
@@ -56,6 +56,25 @@ public class Server extends Thread {
                             break;
                         case 34567:
                             //同步检查
+                            if (sqLiteHelper.getDatabaseStatement()) {
+                                int cnt = inputStream.readInt(); // 需要处理的数据数量
+                                for (int j = 0; j < cnt; j++) {
+                                    long uid = inputStream.readLong();
+                                    if (sqLiteHelper.isExist(uid)) {
+                                        long newDate = inputStream.readLong();
+                                        if(sqLiteHelper.getUpdateDate(uid) != newDate) {
+                                            //判断修改时间是否不同，若有改变则更新文件
+                                            util.downloadFiles(outputStream, inputStream);
+                                        } else {
+                                            continue;
+                                        }
+                                    }
+                                }
+                            } else {
+                                // 没有数据库，同步所有文件(包括数据库)
+                                util.downloadFiles(outputStream, inputStream);
+                                sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\RES_DATABASE.db");
+                            }
                             break;
                         default:
                             break;

@@ -2,9 +2,7 @@ package utils;
 
 import javax.naming.Name;
 import java.io.*;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Objects;
+import java.util.*;
 
 public class DirAndFileUtil {
 
@@ -15,9 +13,11 @@ public class DirAndFileUtil {
     private String NAME = null;
 
 
+
+
     public DirAndFileUtil(int choice) {
-        if(choice == serverNum) NAME = SERVER;
-        else if(choice == serverNum) NAME = CLIENT;
+        if (choice == serverNum) NAME = SERVER;
+        else if (choice == clientNum) NAME = CLIENT;
         else NAME = null;
     }
 
@@ -63,7 +63,7 @@ public class DirAndFileUtil {
                 outputStream.writeUTF(dirName);
                 // 等待创建文件夹的信息
                 String re = inputStream.readUTF();
-                if(re.equals("文件夹创建失败")) continue;
+                if (re.equals("文件夹创建失败")) continue;
                 System.out.println(re);
                 //要传送的文件数量
                 outputStream.writeInt(dirAndFiles.get(dirName).size());
@@ -193,4 +193,5 @@ send files
             return r;
         }
     }
+
 }

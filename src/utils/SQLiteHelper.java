@@ -25,7 +25,6 @@ public class SQLiteHelper {
     }
 
     public SQLiteHelper(String url) {
-        System.out.println(url);
         databaseUrl = url;
         try {
             Class.forName("org.sqlite.JDBC");
@@ -50,8 +49,8 @@ public class SQLiteHelper {
                     rs.getLong("updateDate"),
                     rs.getString("dirPath")
             ));
+
         }
-        System.out.println(idList.get(15L).getDesc());
     }
 
     public boolean getDatabaseStatement() {
@@ -73,5 +72,34 @@ public class SQLiteHelper {
         return true;
     }
 
+    public HashMap<Long, ResData> getIdList() {
+        return idList;
+    }
 
+    public boolean updateSQL(Long uid, Long updateDate, String desc) {
+        String query = "UPDATE resdata SET desc=?, SET updateDate=? WHERE uid=?";
+        PreparedStatement statement = null;
+        try {
+            statement = conn.prepareStatement(query);
+            statement.setString(1, desc);
+            statement.setLong(2, updateDate);
+            statement.setLong(3, uid);
+            statement.executeUpdate();
+            return true;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            return false;
+        }
+
+    }
+
+    public void shutdownSQL() {
+        try {
+            rs.close();
+            statement.close();
+            conn.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
 }

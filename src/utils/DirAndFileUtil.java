@@ -36,9 +36,11 @@ public class DirAndFileUtil {
         if (!dir.exists()) {
             dir.mkdirs();
         } else {
-            System.out.println("准备传送文件。。。。。");
+
             dirNames = dir.list();
+            System.out.println("准备传送文件。。。。。" + dirNames.length);
             for (File d : dir.listFiles()) {
+
                 // 判断是否有该文件夹， 没有则创建
                 if (dirAndFiles.getOrDefault(d.getName(), null) == null) {
                     dirAndFiles.put(d.getName(), new LinkedList<>());
@@ -194,4 +196,27 @@ send files
         }
     }
 
+    public boolean getSQL(DataOutputStream outputStream, DataInputStream inputStream) {
+        try {
+            byte[] bytes = new byte[512]; // 缓冲池
+            int len = inputStream.readInt(); // 文件长度
+            System.out.println("real size = " + len);
+            String fileName = inputStream.readUTF(); // 文件名称
+            File file = new File("C:\\Users\\Linkdamo\\Desktop\\" + NAME + "\\database\\", fileName); //保存路径
+            if (!file.exists()) {
+                file.createNewFile(); // 为接收文件创建文件
+            }
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            while (len > 0) { // 检测是否传输完成
+                int temp = inputStream.read(bytes);
+                fileOutputStream.write(bytes);
+                len -= temp;
+            }
+            fileOutputStream.close(); // 关闭文件输出流，结束该文件传输
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

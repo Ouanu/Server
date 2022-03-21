@@ -4,13 +4,14 @@ import utils.SQLiteHelper;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.UUID;
 
 
 public class Server extends Thread {
     private ServerSocket serverSocket;
     private int port = 9250;
     private static Object lock = new Object();
-    private static SQLiteHelper sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\RES_DATABASE.db");
+    private static SQLiteHelper sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
 
 
     public Server() throws IOException {
@@ -57,23 +58,42 @@ public class Server extends Thread {
                         case 34567:
                             //同步检查
                             if (sqLiteHelper.getDatabaseStatement()) {
+                                System.out.println("有数据库");
+                                outputStream.writeLong(1000l);
+                                boolean isChange = false;
                                 int cnt = inputStream.readInt(); // 需要处理的数据数量
                                 for (int j = 0; j < cnt; j++) {
                                     long uid = inputStream.readLong();
+                                    long newDate;
                                     if (sqLiteHelper.isExist(uid)) {
-                                        long newDate = inputStream.readLong();
+                                        newDate = inputStream.readLong();
                                         if(sqLiteHelper.getUpdateDate(uid) != newDate) {
                                             //判断修改时间是否不同，若有改变则更新文件
-                                            util.downloadFiles(outputStream, inputStream);
+                                            outputStream.writeBoolean(true);
+                                            util.receiveFiles(outputStream, inputStream);
+                                            isChange = true;
                                         } else {
+                                            outputStream.writeBoolean(false);
                                             continue;
                                         }
                                     }
                                 }
+                                if (isChange) {
+                                    System.out.println("数据库需要更新");
+                                    sqLiteHelper.shutdownSQL();
+                                    outputStream.writeUTF("数据库关闭");
+                                    util.getSQL(outputStream, inputStream);
+                                    sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
+                                } else {
+                                    System.out.println("数据库不需要更新");
+                                }
                             } else {
+                                outputStream.writeLong(1111l);
                                 // 没有数据库，同步所有文件(包括数据库)
                                 util.downloadFiles(outputStream, inputStream);
-                                sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\RES_DATABASE.db");
+                                // 重新读取数据库
+                                outputStream.writeUTF("数据库传输完成");
+                                sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
                             }
                             break;
                         default:

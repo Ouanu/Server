@@ -1,6 +1,5 @@
 package utils;
 
-import javax.naming.Name;
 import java.io.*;
 import java.util.*;
 
@@ -10,7 +9,7 @@ public class DirAndFileUtil {
     private static final int clientNum = 2;
     private static final String SERVER = "server";
     private static final String CLIENT = "client";
-    private String NAME = null;
+    private final String NAME;
 
 
 
@@ -26,6 +25,7 @@ public class DirAndFileUtil {
      *
      * @param outputStream 输出流
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void synchronizeFiles(DataInputStream inputStream, DataOutputStream outputStream) {
 
         int cnt;
@@ -38,8 +38,9 @@ public class DirAndFileUtil {
         } else {
 
             dirNames = dir.list();
+            assert dirNames != null;
             System.out.println("准备传送文件。。。。。" + dirNames.length);
-            for (File d : dir.listFiles()) {
+            for (File d : Objects.requireNonNull(dir.listFiles())) {
 
                 // 判断是否有该文件夹， 没有则创建
                 if (dirAndFiles.getOrDefault(d.getName(), null) == null) {
@@ -72,8 +73,8 @@ public class DirAndFileUtil {
 
                 while (dirAndFiles.get(dirName).peek() != null) {
                     if (sendFiles(outputStream, dirAndFiles.get(dirName).peek())) {
-                        if (map.getOrDefault(dirAndFiles.get(dirName).peek().getName(), -1) != -1) {
-                            map.remove(dirAndFiles.get(dirName).peek().getName());
+                        if (map.getOrDefault(Objects.requireNonNull(dirAndFiles.get(dirName).peek()).getName(), -1) != -1) {
+                            map.remove(Objects.requireNonNull(dirAndFiles.get(dirName).peek()).getName());
                         }
                         dirAndFiles.get(dirName).poll();
                     } else {
@@ -123,6 +124,7 @@ public class DirAndFileUtil {
      *
      * @param inputStream 输入流
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void receiveFiles(DataOutputStream outputStream, DataInputStream inputStream) {
         try {
             //创建文件夹
@@ -169,7 +171,6 @@ public class DirAndFileUtil {
 send files
 */
     public boolean sendFiles(DataOutputStream outputStream, File file) {
-        boolean r = false;
         try {
 //            File file = new File("C:\\Users\\Linkdamo\\Desktop\\证明2.jpg");
             if (file.exists()) {
@@ -187,16 +188,15 @@ send files
                     outputStream.write(bytes);
                 }
             }
-            r = true;
+            return true;
         } catch (Exception e) {
             System.out.println("Failed to send files" + e);
-            r = false;
-        } finally {
-            return r;
+            return false;
         }
     }
 
-    public boolean getSQL(DataOutputStream outputStream, DataInputStream inputStream) {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public boolean getSQL(DataInputStream inputStream) {
         try {
             byte[] bytes = new byte[512]; // 缓冲池
             int len = inputStream.readInt(); // 文件长度

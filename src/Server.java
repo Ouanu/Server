@@ -4,20 +4,20 @@ import utils.SQLiteHelper;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.UUID;
 
 
 public class Server extends Thread {
-    private ServerSocket serverSocket;
-    private int port = 9250;
-    private static Object lock = new Object();
+    private final ServerSocket serverSocket;
+    private static final Object lock = new Object();
     private static SQLiteHelper sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
 
 
     public Server() throws IOException {
+        int port = 9250;
         this.serverSocket = new ServerSocket(port);
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     private void execute() throws IOException {
         while (true) {
             Socket socket = serverSocket.accept();
@@ -26,8 +26,8 @@ public class Server extends Thread {
     }
 
     private static class Task implements Runnable {
-        private DirAndFileUtil util = new DirAndFileUtil(1);
-        private Socket socket;
+        private final DirAndFileUtil util = new DirAndFileUtil(1);
+        private final Socket socket;
 
         public Task(Socket socket) {
             this.socket = socket;
@@ -59,7 +59,7 @@ public class Server extends Thread {
                             //同步检查
                             if (sqLiteHelper.getDatabaseStatement()) {
                                 System.out.println("有数据库");
-                                outputStream.writeLong(1000l);
+                                outputStream.writeLong(1000L);
                                 boolean isChange = false;
                                 int cnt = inputStream.readInt(); // 需要处理的数据数量
                                 for (int j = 0; j < cnt; j++) {
@@ -74,7 +74,6 @@ public class Server extends Thread {
                                             isChange = true;
                                         } else {
                                             outputStream.writeBoolean(false);
-                                            continue;
                                         }
                                     }
                                 }
@@ -82,13 +81,18 @@ public class Server extends Thread {
                                     System.out.println("数据库需要更新");
                                     sqLiteHelper.shutdownSQL();
                                     outputStream.writeUTF("数据库关闭");
-                                    util.getSQL(outputStream, inputStream);
-                                    sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
+                                    boolean isSql = util.getSQL(inputStream);
+                                    if (isSql) {
+                                        sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
+                                    } else {
+                                        System.out.println("数据库传输失败");
+                                    }
+
                                 } else {
                                     System.out.println("数据库不需要更新");
                                 }
                             } else {
-                                outputStream.writeLong(1111l);
+                                outputStream.writeLong(1111L);
                                 // 没有数据库，同步所有文件(包括数据库)
                                 util.downloadFiles(outputStream, inputStream);
                                 // 重新读取数据库

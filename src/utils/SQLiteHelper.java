@@ -1,6 +1,8 @@
 package utils;
 
 import data.ResData;
+
+import java.io.File;
 import java.sql.*;
 import java.util.HashMap;
 
@@ -8,10 +10,10 @@ public class SQLiteHelper {
     private Connection conn = null;
     private ResultSet rs = null;
     private Statement statement = null;
-    private static volatile SQLiteHelper INSTANCE = null;
+    private static final SQLiteHelper INSTANCE = null;
     private static String databaseUrl = null;
-    private HashMap<Long, ResData> idList = new HashMap<>();
-    private boolean isOpen = false;
+    private final HashMap<Long, ResData> idList = new HashMap<>();
+    private boolean isOpen;
 
     public static SQLiteHelper getInstance() {
         if (INSTANCE == null) {
@@ -36,6 +38,11 @@ public class SQLiteHelper {
         } catch (Exception e) {
             System.out.println("Fail to open database __" + e);
             isOpen = false;
+            File sql = new File(url);
+            // 删除错误文件
+            if (sql.exists()) {
+                sql.delete();
+            }
         }
     }
 

@@ -2,6 +2,12 @@ import utils.CmdTask;
 
 import javax.swing.*;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.MouseInputAdapter;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -17,10 +23,9 @@ public class MainUI {
     public static void main(String[] args) {
         JFrame frame = new JFrame("MainUI");
         MainUI mainUI = new MainUI();
-        frame.setSize(800, 800);
+        frame.setSize(500, 600);
         frame.setContentPane(mainUI.panel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
         frame.setVisible(true);
 
         try {
@@ -40,6 +45,24 @@ public class MainUI {
                 }
             };
             mainUI.list1.setModel(mainUI.listModel);
+            mainUI.list1.addMouseListener(new MouseInputAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+//                    super.mouseClicked(e);
+                    if (mainUI.list1.getSelectedIndex() != -1) {
+                        if (e.getClickCount() == 1) {
+                            System.out.println("选中" + list.get(mainUI.list1.getSelectedIndex()));
+                        } else if (e.getClickCount() == 2) {
+                            System.out.println("打开文件" + list.get(mainUI.list1.getSelectedIndex()));
+                            try {
+                                Desktop.getDesktop().open(new File("C:\\Users\\Linkdamo\\Desktop\\server\\" + list.get(mainUI.list1.getSelectedIndex())));
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            });
             server.execute();
         } catch (IOException e) {
             e.printStackTrace();

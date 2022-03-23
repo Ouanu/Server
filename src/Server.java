@@ -143,7 +143,7 @@ public class Server extends Thread {
         HashMap<Long, ResData> idList = sqLiteHelper.getIdList();
         ArrayList<String> list = new ArrayList<>();
         for (Long aLong : idList.keySet()) {
-            list.add(aLong.toString() + " " + idList.get(aLong).getDesc());
+            list.add(idList.get(aLong).getDirPath());
         }
         return list;
     }

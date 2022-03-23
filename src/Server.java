@@ -1,9 +1,15 @@
+import data.ResData;
+import utils.CmdTask;
 import utils.DirAndFileUtil;
 import utils.SQLiteHelper;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class Server extends Thread {
@@ -15,10 +21,11 @@ public class Server extends Thread {
     public Server() throws IOException {
         int port = 9250;
         this.serverSocket = new ServerSocket(port);
+
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
-    private void execute() throws IOException {
+    public void execute() throws IOException {
         while (true) {
             Socket socket = serverSocket.accept();
             new Thread(new Task(socket)).start();
@@ -116,13 +123,92 @@ public class Server extends Thread {
 
     }
 
-    public static void main(String[] args) {
+//    public static void main(String[] args) {
+//        try {
+//            Server server = new Server();
+//            server.execute();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
+
+    public String getIPAddress() {
+        InetAddress localHost = getLocalHostExactAddress();
+
+        return localHost.toString();
+    }
+
+    public ArrayList<String> getList() {
+        HashMap<Long, ResData> idList = sqLiteHelper.getIdList();
+        ArrayList<String> list = new ArrayList<>();
+        for (Long aLong : idList.keySet()) {
+            list.add(aLong.toString() + " " + idList.get(aLong).getDesc());
+        }
+        return list;
+    }
+
+    public static InetAddress getLocalHostExactAddress() {
         try {
-            Server server = new Server();
-            server.execute();
+            InetAddress candidateAddress = null;
+
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface iface = networkInterfaces.nextElement();
+                // 该网卡接口下的ip会有多个，也需要一个个的遍历，找到自己所需要的
+                for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
+                    InetAddress inetAddr = inetAddrs.nextElement();
+                    // 排除loopback回环类型地址（不管是IPv4还是IPv6 只要是回环地址都会返回true）
+                    if (!inetAddr.isLoopbackAddress()) {
+                        if (inetAddr.isSiteLocalAddress()) {
+                            // 如果是site-local地址，就是它了 就是我们要找的
+                            // ~~~~~~~~~~~~~绝大部分情况下都会在此处返回你的ip地址值~~~~~~~~~~~~~
+                            return inetAddr;
+                        }
+
+                        // 若不是site-local地址 那就记录下该地址当作候选
+                        if (candidateAddress == null) {
+                            candidateAddress = inetAddr;
+                        }
+
+                    }
+                }
+            }
+
+            // 如果出去loopback回环地之外无其它地址了，那就回退到原始方案吧
+            return candidateAddress == null ? InetAddress.getLocalHost() : candidateAddress;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String getV4IP() {
+        String ip = "";
+        String chinaz = "https://ip.chinaz.com/";
+
+        String inputLine = "";
+        String read = "";
+
+        try {
+            URL url = new URL(chinaz);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            while ((read = in.readLine()) != null) {
+                inputLine += read;
+            }
+            System.out.println(inputLine);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        // 正则匹配标签
+        Pattern pattern = Pattern.compile("\\<dd class\\=\"fz24\">(.*?)\\<\\/dd>");
+        Matcher matcher = pattern.matcher(inputLine);
+        if (matcher.find()) {
+            ip = matcher.group();
+            System.out.println(ip);
+        }
+        return ip;
     }
 }

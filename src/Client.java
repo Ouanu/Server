@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class Client {
 
     private int port = 9250;
-    private String address = "127.0.0.1";
+    private String address = "192.168.137.1";
     private Socket socket;
     private SQLiteHelper helper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\client\\database\\RES_DATABASE.db");
 

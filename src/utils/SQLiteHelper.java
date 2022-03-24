@@ -28,21 +28,36 @@ public class SQLiteHelper {
 
     public SQLiteHelper(String url) {
         databaseUrl = url;
-        try {
-            Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:" + url);
-            statement = conn.createStatement();
-            rs = statement.executeQuery("SELECT * FROM resdata");
-            initResData();
-            isOpen = true;
-        } catch (Exception e) {
-            System.out.println("Fail to open database __" + e);
-            isOpen = false;
-            File sql = new File(url);
-            // 删除错误文件
-            if (sql.exists()) {
-                sql.delete();
+        File file = new File(databaseUrl);
+        if (file.exists()) {
+            try {
+                Class.forName("org.sqlite.JDBC");
+                conn = DriverManager.getConnection("jdbc:sqlite:" + url);
+                statement = conn.createStatement();
+                rs = statement.executeQuery("SELECT * FROM resdata");
+                initResData();
+                isOpen = true;
+            } catch (Exception e) {
+                System.out.println("Fail to open database __" + e);
+                isOpen = false;
+                try {
+                    conn.close();
+                    // 删除错误文件
+                    deleteSQL();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+
             }
+        }
+
+    }
+
+    public void deleteSQL() {
+        File file = new File(databaseUrl);
+        if (file.exists()) {
+            System.out.println("删除数据库");
+            file.delete();
         }
     }
 
@@ -54,8 +69,8 @@ public class SQLiteHelper {
                     rs.getString("desc"),
                     rs.getString("uri"),
                     rs.getLong("updateDate"),
-                    rs.getString("dirPath")
-            ));
+                    rs.getString("dirPath"),
+                    rs.getString("dirName")));
 
         }
     }

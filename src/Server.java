@@ -69,11 +69,13 @@ public class Server extends Thread {
                                 outputStream.writeLong(1000L);
                                 boolean isChange = false;
                                 int cnt = inputStream.readInt(); // 需要处理的数据数量
+                                System.out.println("需要处理的文件数量" + cnt);
                                 for (int j = 0; j < cnt; j++) {
                                     long uid = inputStream.readLong();
                                     long newDate;
                                     if (sqLiteHelper.isExist(uid)) {
                                         newDate = inputStream.readLong();
+                                        outputStream.writeInt(999);
                                         if(sqLiteHelper.getUpdateDate(uid) != newDate) {
                                             //判断修改时间是否不同，若有改变则更新文件
                                             outputStream.writeBoolean(true);
@@ -82,15 +84,22 @@ public class Server extends Thread {
                                         } else {
                                             outputStream.writeBoolean(false);
                                         }
+                                    } else {
+                                        newDate = inputStream.readLong();
+                                        outputStream.writeInt(900);
+                                        util.receiveFiles(outputStream, inputStream);
+                                        isChange = true;
                                     }
                                 }
                                 if (isChange) {
                                     System.out.println("数据库需要更新");
                                     sqLiteHelper.shutdownSQL();
+
                                     outputStream.writeUTF("数据库关闭");
                                     boolean isSql = util.getSQL(inputStream);
                                     if (isSql) {
                                         sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
+                                        System.out.println(sqLiteHelper.getIdList().size());
                                     } else {
                                         System.out.println("数据库传输失败");
                                     }
@@ -102,9 +111,20 @@ public class Server extends Thread {
                                 outputStream.writeLong(1111L);
                                 // 没有数据库，同步所有文件(包括数据库)
                                 util.downloadFiles(outputStream, inputStream);
-                                // 重新读取数据库
-                                outputStream.writeUTF("数据库传输完成");
-                                sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
+                                int cnt = inputStream.readInt();
+                                System.out.println("database :" + cnt);
+                                boolean isSql = false;
+                                for (int t = 0; t < cnt; t++) {
+                                    isSql = util.getSQL(inputStream);
+                                }
+                                if (isSql) {
+                                    // 重新读取数据库
+                                    outputStream.writeUTF("数据库传输完成");
+                                    sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
+                                } else {
+                                    System.out.println("数据库传输失败");
+                                }
+//                                sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
                             }
                             break;
                         default:
@@ -143,7 +163,7 @@ public class Server extends Thread {
         HashMap<Long, ResData> idList = sqLiteHelper.getIdList();
         ArrayList<String> list = new ArrayList<>();
         for (Long aLong : idList.keySet()) {
-            list.add(idList.get(aLong).getDirPath());
+            list.add(idList.get(aLong).getDirName());
         }
         return list;
     }

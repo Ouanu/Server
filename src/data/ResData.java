@@ -7,14 +7,16 @@ public class ResData {
     private String uri;
     private long updateDate;
     private String dirPath;
+    private String dirName;
 
-    public ResData(long uid, String title, String desc, String uri, long updateDate, String dirPath) {
+    public ResData(long uid, String title, String desc, String uri, long updateDate, String dirPath, String dirName) {
         this.uid = uid;
         this.title = title;
         this.desc = desc;
         this.uri = uri;
         this.updateDate = updateDate;
         this.dirPath = dirPath;
+        this.dirName = dirName;
     }
 
     public long getUid() {
@@ -63,5 +65,13 @@ public class ResData {
 
     public void setDirPath(String dirPath) {
         this.dirPath = dirPath;
+    }
+
+    public String getDirName() {
+        return dirName;
+    }
+
+    public void setDirName(String dirName) {
+        this.dirName = dirName;
     }
 }

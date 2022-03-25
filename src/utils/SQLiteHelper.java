@@ -12,19 +12,19 @@ public class SQLiteHelper {
     private Statement statement = null;
     private static final SQLiteHelper INSTANCE = null;
     private static String databaseUrl = null;
-    private final HashMap<Long, ResData> idList = new HashMap<>();
+    private HashMap<Long, ResData> idList = new HashMap<>();
     private boolean isOpen;
 
-    public static SQLiteHelper getInstance() {
-        if (INSTANCE == null) {
-            synchronized (SQLiteHelper.class) {
-                if (INSTANCE == null) {
-                    return new SQLiteHelper(databaseUrl);
-                }
-            }
-        }
-        return INSTANCE;
-    }
+//    public static SQLiteHelper getInstance() {
+//        if (INSTANCE == null) {
+//            synchronized (SQLiteHelper.class) {
+//                if (INSTANCE == null) {
+//                    return new SQLiteHelper(databaseUrl);
+//                }
+//            }
+//        }
+//        return INSTANCE;
+//    }
 
     public SQLiteHelper(String url) {
         databaseUrl = url;
@@ -38,7 +38,7 @@ public class SQLiteHelper {
                 initResData();
                 isOpen = true;
             } catch (Exception e) {
-                System.out.println("Fail to open database __" + e);
+                e.printStackTrace();
                 isOpen = false;
                 try {
                     conn.close();
@@ -62,6 +62,7 @@ public class SQLiteHelper {
     }
 
     public void initResData() throws SQLException {
+
         while (rs.next()) {
             idList.put(rs.getLong("uid"), new ResData(
                     rs.getLong("uid"),

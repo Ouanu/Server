@@ -1,5 +1,4 @@
 import data.ResData;
-import utils.CmdTask;
 import utils.DirAndFileUtil;
 import utils.SQLiteHelper;
 
@@ -15,13 +14,13 @@ import java.util.regex.Pattern;
 public class Server extends Thread {
     private final ServerSocket serverSocket;
     private static final Object lock = new Object();
-    private static SQLiteHelper sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
+    private SQLiteHelper sqLiteHelper;
 
 
     public Server() throws IOException {
         int port = 9250;
         this.serverSocket = new ServerSocket(port);
-
+        sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
@@ -32,7 +31,7 @@ public class Server extends Thread {
         }
     }
 
-    private static class Task implements Runnable {
+    private class Task implements Runnable {
         private final DirAndFileUtil util = new DirAndFileUtil(1);
         private final Socket socket;
 
@@ -42,10 +41,14 @@ public class Server extends Thread {
 
         @Override
         public void run() {
+
+
+            DataInputStream inputStream = null;
+            DataOutputStream outputStream = null;
             synchronized (lock) {
                 try {
-                    DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-                    DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+                    inputStream = new DataInputStream(socket.getInputStream());
+                    outputStream = new DataOutputStream(socket.getOutputStream());
                     // 链接检查
                     String s = inputStream.readUTF();
                     System.out.println(s);
@@ -90,16 +93,24 @@ public class Server extends Thread {
                                         util.receiveFiles(outputStream, inputStream);
                                         isChange = true;
                                     }
+                                    outputStream.flush();
                                 }
                                 if (isChange) {
                                     System.out.println("数据库需要更新");
                                     sqLiteHelper.shutdownSQL();
-
+                                    sqLiteHelper.deleteSQL();
                                     outputStream.writeUTF("数据库关闭");
-                                    boolean isSql = util.getSQL(inputStream);
+                                    int c = inputStream.readInt();
+                                    System.out.println("数据库文件：" + c);
+                                    boolean isSql = false;
+                                    for (int t = 0; t < c; t++) {
+                                        isSql = util.getSQL(inputStream);
+                                    }
                                     if (isSql) {
+                                        // 重新读取数据库
+//                                        outputStream.writeUTF("数据库传输完成");
+                                        sqLiteHelper.shutdownSQL();
                                         sqLiteHelper = new SQLiteHelper("C:\\Users\\Linkdamo\\Desktop\\server\\database\\RES_DATABASE.db");
-                                        System.out.println(sqLiteHelper.getIdList().size());
                                     } else {
                                         System.out.println("数据库传输失败");
                                     }
@@ -130,13 +141,22 @@ public class Server extends Thread {
                         default:
                             break;
                     }
-                    s = inputStream.readUTF(); //接收完成指令
-                    System.out.println(s);
-                    inputStream.close();
-                    outputStream.close();
-                    socket.close();
+//                    s = inputStream.readUTF(); //接收完成指令
+                    System.out.println("FINISH");
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    try {
+//                        socket.getOutputStream().flush();
+//                        socket.getInputStream().reset();
+                        inputStream.close();
+                        outputStream.close();
+                        socket.close();
+//                        sqLiteHelper.shutdownSQL();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                 }
             }
         }

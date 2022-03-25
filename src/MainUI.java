@@ -14,6 +14,7 @@ public class MainUI {
     private JList list1;
     private JTextArea port;
     private ListModel<String> listModel;
+    private static ArrayList<String> list;
 
 
     public static void main(String[] args) {
@@ -28,19 +29,30 @@ public class MainUI {
             Server server = new Server();
             mainUI.textArea1.setText("IP:" + server.getIPAddress());
             mainUI.textArea2.setText("端口：9250");
-            ArrayList<String> list = server.getList();
-            mainUI.listModel = new AbstractListModel<String>() {
-                @Override
-                public int getSize() {
-                    return list.size();
-                }
 
-                @Override
-                public String getElementAt(int index) {
-                    return list.get(index);
+            new Thread(() -> {
+                while(true) {
+                    list = server.getList();
+                    mainUI.listModel = new AbstractListModel<String>() {
+                        @Override
+                        public int getSize() {
+                            return list.size();
+                        }
+
+                        @Override
+                        public String getElementAt(int index) {
+                            return list.get(index);
+                        }
+                    };
+                    mainUI.list1.setModel(mainUI.listModel);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-            };
-            mainUI.list1.setModel(mainUI.listModel);
+            }).start();
+
             mainUI.list1.addMouseListener(new MouseInputAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {

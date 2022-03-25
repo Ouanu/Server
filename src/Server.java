@@ -41,8 +41,6 @@ public class Server extends Thread {
 
         @Override
         public void run() {
-
-
             DataInputStream inputStream = null;
             DataOutputStream outputStream = null;
             synchronized (lock) {
@@ -156,7 +154,6 @@ public class Server extends Thread {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
                 }
             }
         }

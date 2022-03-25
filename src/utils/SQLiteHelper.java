@@ -15,17 +15,6 @@ public class SQLiteHelper {
     private HashMap<Long, ResData> idList = new HashMap<>();
     private boolean isOpen;
 
-//    public static SQLiteHelper getInstance() {
-//        if (INSTANCE == null) {
-//            synchronized (SQLiteHelper.class) {
-//                if (INSTANCE == null) {
-//                    return new SQLiteHelper(databaseUrl);
-//                }
-//            }
-//        }
-//        return INSTANCE;
-//    }
-
     public SQLiteHelper(String url) {
         databaseUrl = url;
         File file = new File(databaseUrl);
